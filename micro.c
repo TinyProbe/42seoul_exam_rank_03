@@ -56,8 +56,8 @@ int exec(FILE *fp) {
 		if (tmp != 6 || (type != 'r' && type != 'R') || w <= 0 || h <= 0) {
 			return err(ERR_FILE);
 		}
-		int b_i = (y == (int) y ? y : (y < 0 ? y : y + 1));
-		int b_j = (x == (int) x ? x : (x < 0 ? x : x + 1));
+		int b_i = (y != (int) y && y > 0 ? y + 1 : y);
+		int b_j = (x != (int) x && x > 0 ? x + 1 : x);
 		int e_i = y + h - (y + h < 0 ? 1 : 0);
 		int e_j = x + w - (x + w < 0 ? 1 : 0);
 		for (int i = 0; i < hei; ++i) {
