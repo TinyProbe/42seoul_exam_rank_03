@@ -10,7 +10,7 @@
 #define WID 1000
 
 float abs__(float n);
-int strlen__(const char *str);
+int strlen__(const char *s);
 int err(const char *s, FILE *fp);
 int exec(const char *path);
 
@@ -28,16 +28,17 @@ float abs__(float n) {
 	return n;
 }
 
-int strlen__(const char *str) {
+int strlen__(const char *s) {
 	int i = -1;
-	while (str[++i]);
+	while (s[++i]);
 	return i;
 }
 
 int err(const char *s, FILE *fp) {
 	write(STDOUT__, s, strlen__(s));
-	if (fp)
+	if (fp) {
 		fclose(fp);
+	}
 	return 1;
 }
 

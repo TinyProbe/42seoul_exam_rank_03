@@ -8,7 +8,7 @@
 #define HEI 1000
 #define WID 1000
 
-int strlen__(const char *str);
+int strlen__(const char *s);
 int err(const char *s, FILE *fp);
 int exec(const char *path);
 
@@ -19,16 +19,17 @@ int main(int ac, char **av) {
 	return exec(av[1]);
 }
 
-int strlen__(const char *str) {
+int strlen__(const char *s) {
 	int i = -1;
-	while (str[++i]);
+	while (s[++i]);
 	return i;
 }
 
 int err(const char *s, FILE *fp) {
 	write(STDOUT__, s, strlen__(s));
-	if (fp)
+	if (fp) {
 		fclose(fp);
+	}
 	return 1;
 }
 
