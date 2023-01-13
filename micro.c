@@ -9,20 +9,14 @@
 #define WID 1000
 
 int strlen__(const char *str);
-int err(const char *s);
-int exec(FILE *fp);
+int err(const char *s, FILE *fp);
+int exec(const char *path);
 
 int main(int ac, char **av) {
 	if (ac != 2) {
-		return err(ERR_ARG);
+		return err(ERR_ARG, NULL);
 	}
-	FILE *fp = fopen(av[1], "r");
-	if (!fp) {
-		return err(ERR_FILE);
-	}
-	int res = exec(fp);
-	fclose(fp);
-	return res;
+	return exec(av[1]);
 }
 
 int strlen__(const char *str) {
@@ -31,19 +25,25 @@ int strlen__(const char *str) {
 	return i;
 }
 
-int err(const char *s) {
+int err(const char *s, FILE *fp) {
 	write(STDOUT__, s, strlen__(s));
+	if (fp)
+		fclose(fp);
 	return 1;
 }
 
-int exec(FILE *fp) {
+int exec(const char *path) {
 	char map[HEI][WID];
 	int wid, hei; char bg;
 	char type; float x, y, w, h; char c;
 
+	FILE *fp = fopen(path, "r");
+	if (!fp) {
+		return err(ERR_FILE, fp);
+	}
 	int tmp = fscanf(fp, "%d %d %c\n", &wid, &hei, &bg);
 	if (tmp != 3 || wid < 1 || wid > 300 || hei < 1 || hei > 300) {
-		return err(ERR_FILE);
+		return err(ERR_FILE, fp);
 	}
 	for (int i = 0; i < hei; ++i) {
 		memset(map[i], bg, wid);
@@ -54,7 +54,7 @@ int exec(FILE *fp) {
 			break;
 		}
 		if (tmp != 6 || (type != 'r' && type != 'R') || w <= 0 || h <= 0) {
-			return err(ERR_FILE);
+			return err(ERR_FILE, fp);
 		}
 		int b_i = (y != (int) y && y > 0 ? y + 1 : y);
 		int b_j = (x != (int) x && x > 0 ? x + 1 : x);
@@ -63,13 +63,10 @@ int exec(FILE *fp) {
 		for (int i = 0; i < hei; ++i) {
 			for (int j = 0; j < wid; ++j) {
 				if (i >= b_i && i <= e_i && j >= b_j && j <= e_j) {
-					if (type == 'r') {
-						if (i == b_i || i == e_i || j == b_j || j == e_j) {
-							map[i][j] = c;
-						}
-					} else {
-						map[i][j] = c;
+					if (type == 'r' && i != b_i && i != e_i && j != b_j && j != e_j) {
+						continue;
 					}
+					map[i][j] = c;
 				}
 			}
 		}
@@ -78,5 +75,6 @@ int exec(FILE *fp) {
 		write(STDOUT__, map[i], wid);
 		write(STDOUT__, "\n", 1);
 	}
+	fclose(fp);
 	return 0;
 }

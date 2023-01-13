@@ -11,20 +11,14 @@
 
 float abs__(float n);
 int strlen__(const char *str);
-int err(const char *s);
-int exec(FILE *fp);
+int err(const char *s, FILE *fp);
+int exec(const char *path);
 
 int main(int ac, char **av) {
 	if (ac != 2) {
-		return err(ERR_ARG);
+		return err(ERR_ARG, NULL);
 	}
-	FILE *fp = fopen(av[1], "r");
-	if (!fp) {
-		return err(ERR_FILE);
-	}
-	int res = exec(fp);
-	fclose(fp);
-	return res;
+	return exec(av[1]);
 }
 
 float abs__(float n) {
@@ -40,19 +34,25 @@ int strlen__(const char *str) {
 	return i;
 }
 
-int err(const char *s) {
+int err(const char *s, FILE *fp) {
 	write(STDOUT__, s, strlen__(s));
+	if (fp)
+		fclose(fp);
 	return 1;
 }
 
-int exec(FILE *fp) {
+int exec(const char *path) {
 	char map[HEI][WID];
 	int wid, hei; char bg;
 	char type; float x, y, r; char c;
 
+	FILE *fp = fopen(path, "r");
+	if (!fp) {
+		return err(ERR_FILE, fp);
+	}
 	int tmp = fscanf(fp, "%d %d %c\n", &wid, &hei, &bg);
 	if (tmp != 3 || wid < 1 || wid > 300 || hei < 1 || hei > 300) {
-		return err(ERR_FILE);
+		return err(ERR_FILE, fp);
 	}
 	for (int i = 0; i < hei; ++i) {
 		memset(map[i], bg, wid);
@@ -63,7 +63,7 @@ int exec(FILE *fp) {
 			break;
 		}
 		if (tmp != 5 || (type != 'c' && type != 'C') || r <= 0) {
-			return err(ERR_FILE);
+			return err(ERR_FILE, fp);
 		}
 		for (int i = 0; i < hei; ++i) {
 			for (int j = 0; j < wid; ++j) {
@@ -71,14 +71,10 @@ int exec(FILE *fp) {
 				float yy = abs__(y - i) * abs__(y - i);
 				float dist = sqrtf(xx + yy);
 				if (dist <= r) {
-					if (type == 'c') {
-						if (abs__(dist - r) >= 1) {
-							continue;
-						}
-						map[i][j] = c;
-					} else {
-						map[i][j] = c;
+					if (type == 'c' && abs__(dist - r) >= 1) {
+						continue;
 					}
+					map[i][j] = c;
 				}
 			}
 		}
@@ -87,5 +83,6 @@ int exec(FILE *fp) {
 		write(STDOUT__, map[i], wid);
 		write(STDOUT__, "\n", 1);
 	}
+	fclose(fp);
 	return 0;
 }
