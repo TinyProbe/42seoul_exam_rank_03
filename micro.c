@@ -8,6 +8,7 @@
 #define HEI 1000
 #define WID 1000
 
+float abs__(float n);
 int strlen__(const char *s);
 int err(const char *s, FILE *fp);
 int exec(const char *path);
@@ -17,6 +18,13 @@ int main(int ac, char **av) {
 		return err(ERR_ARG, NULL);
 	}
 	return exec(av[1]);
+}
+
+float abs__(float n) {
+	if (n < 0) {
+		return -n;
+	}
+	return n;
 }
 
 int strlen__(const char *s) {
@@ -57,14 +65,18 @@ int exec(const char *path) {
 		if (tmp != 6 || (type != 'r' && type != 'R') || w <= 0 || h <= 0) {
 			return err(ERR_FILE, fp);
 		}
-		int b_i = (y != (int) y && y > 0 ? y + 1 : y);
-		int b_j = (x != (int) x && x > 0 ? x + 1 : x);
-		int e_i = y + h - (y + h < 0 ? 1 : 0);
-		int e_j = x + w - (x + w < 0 ? 1 : 0);
+		float b_i = y;
+		float b_j = x;
+		float e_i = y + h;
+		float e_j = x + w;
 		for (int i = 0; i < hei; ++i) {
 			for (int j = 0; j < wid; ++j) {
 				if (i >= b_i && i <= e_i && j >= b_j && j <= e_j) {
-					if (type == 'r' && i != b_i && i != e_i && j != b_j && j != e_j) {
+					if (type == 'r'
+							&& abs__(i - b_i) >= 1
+							&& abs__(i - e_i) >= 1
+							&& abs__(j - b_j) >= 1
+							&& abs__(j - e_j) >= 1) {
 						continue;
 					}
 					map[i][j] = c;
